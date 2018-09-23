@@ -25,7 +25,6 @@ public class player_controller : MonoBehaviour {
         Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
 
         charController.Move(movement * speed);
-        Debug.Log(charController.velocity);
         if (charController.velocity == Vector3.zero && !animator.GetBool("isIdle"))
         {
         	animationControl.Idle();           
@@ -33,7 +32,9 @@ public class player_controller : MonoBehaviour {
 
         if (charController.velocity != Vector3.zero && !animator.GetBool("isRun"))
         {
-        	animationControl.Run();           
+        	animationControl.Run();
+	    	transform.rotation = Quaternion.LookRotation (movement * speed);
+
         }
 
     }

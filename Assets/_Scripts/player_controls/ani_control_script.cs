@@ -26,9 +26,4 @@ public class ani_control_script : MonoBehaviour {
 		anim.SetBool ("isRun", !boolper);
 		anim.SetBool ("isIdle", false);
 	}
-
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

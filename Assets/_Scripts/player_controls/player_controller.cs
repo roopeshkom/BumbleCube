@@ -4,19 +4,17 @@ using UnityEngine;
 
 public class player_controller : MonoBehaviour {
 
-	private Animator animator;
 	private ani_control_script animationControl;
 	private CharacterController charController;
 	private float gravity = 10f;
-	private float jumpSpeed = 4.7f;
+	private float jumpSpeed = 4.5f;
 	private float speed = 1.5f;
 	private bool isJumping = false;
+	private bool isActionFired = false;
 	private Vector3 moveDirection = Vector3.zero;
-	private float t = 0;
 
 	// Use this for initialization
 	void Start () {
-		animator = GetComponent<Animator>();
 		animationControl = GetComponent<ani_control_script>();
 		charController = GetComponent<CharacterController>();
 	}
@@ -29,16 +27,28 @@ public class player_controller : MonoBehaviour {
 
             if (Input.GetButton("Jump")) {
                 isJumping = true;
-                t = 0;
-            }
+                moveDirection.y = jumpSpeed;
+            } else if (Input.GetButton("Fire1")) {
+            	animationControl.Pickup();
+           	} else if (Input.GetButton("Fire2")) {
+           		animationControl.Wave();
+           	}
         }
         if (isJumping) {
-        	moveDirection.y = jumpSpeed - gravity * t;
-        	t += Time.deltaTime;
+        	moveDirection.y -= gravity * Time.deltaTime;
+        	animationControl.Jump(moveDirection.y);
         } else {
 	        moveDirection.y -= gravity;
         }
         charController.Move(moveDirection * Time.deltaTime);
+
+        Vector3 turnAngle = new Vector3(charController.velocity.x, 0f, charController.velocity.z);
+        if (turnAngle != Vector3.zero) {
+        	animationControl.Run();
+        	transform.rotation = Quaternion.LookRotation(turnAngle * Time.deltaTime);
+        } else {
+        	animationControl.Idle();
+        }
         
       //   if (charController.velocity == Vector3.zero && !animator.GetBool("isIdle"))
       //   {

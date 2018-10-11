@@ -13,17 +13,28 @@ public class ani_control_script : MonoBehaviour {
 
 	public void Idle ()
 	{
-
-		bool boolper = anim.GetBool("isIdle");
-		anim.SetBool ("isIdle", !boolper);
+		anim.SetFloat("jump", -5f);
+		anim.SetBool ("isIdle", true);
 		anim.SetBool ("isRun", false);
 	}
 
 	public void Run ()
 	{
-
-		bool boolper = anim.GetBool("isRun");
-		anim.SetBool ("isRun", !boolper);
+		anim.SetBool ("isRun", true);
 		anim.SetBool ("isIdle", false);
+	}
+
+	public void Pickup () {
+		anim.SetTrigger ("isPickuping");
+	}
+
+	public void Wave () {
+		anim.SetTrigger ("isWaving");
+	}
+
+	public void Jump (float Yvelocity) {
+		anim.SetBool ("isIdle", false);
+		anim.SetBool ("isRun", false);
+		anim.SetFloat("jump", Yvelocity);
 	}
 }

@@ -4,63 +4,59 @@ using UnityEngine;
 
 public class player_controller : MonoBehaviour {
 
-	private ani_control_script animationControl;
-	private CharacterController charController;
-	private float gravity = 10f;
-	private float jumpSpeed = 4.5f;
-	private float speed = 1.5f;
-	private bool isJumping = false;
-	private bool isActionFired = false;
-	private Vector3 moveDirection = Vector3.zero;
+    public float jumpPower;
+    public float moveSpeed;
+    public float turnSpeed;
+    public float gravity;
+    public float jumpForwardFactor;
 
+    private ani_control_script animationControl;
+	private CharacterController charController;
+    private Vector3 movement;
+	
 	// Use this for initialization
 	void Start () {
 		animationControl = GetComponent<ani_control_script>();
 		charController = GetComponent<CharacterController>();
+        movement = Vector3.zero;
 	}
 	
     void FixedUpdate () {
+
+        // Rotates and moves the player, and factors in gravity and jumping, scaled with movement (Control movements here)
         if (charController.isGrounded) {
-        	isJumping = false;
-            moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0.0f, Input.GetAxis("Vertical"));
-            moveDirection *= speed;
-
+            movement = transform.forward * Mathf.Pow(Input.GetAxis("Vertical"), 3) * moveSpeed * Time.deltaTime;
             if (Input.GetButton("Jump")) {
-                isJumping = true;
-                moveDirection.y = jumpSpeed;
-            } else if (Input.GetButton("Fire1")) {
-            	animationControl.Pickup();
-           	} else if (Input.GetButton("Fire2")) {
-           		animationControl.Wave();
-           	}
+                movement += Vector3.Lerp(Vector3.up, transform.forward, jumpForwardFactor) * jumpPower * Time.deltaTime;
+            }
+        }else{
+            movement += Vector3.down * gravity * Time.deltaTime;
         }
-        if (isJumping) {
-        	moveDirection.y -= gravity * Time.deltaTime;
-        	animationControl.Jump(moveDirection.y);
+
+        charController.Move(movement);
+        transform.Rotate(Vector3.up * Mathf.Pow(Input.GetAxis("Horizontal"), 3) * turnSpeed * Time.deltaTime);
+    }
+
+    void Update() {
+
+        // Handles animation switching between run and idle if not moving (Switch anim states here)
+        if (Mathf.Abs(charController.velocity.z) > 0.01f) {
+            animationControl.Run();
         } else {
-	        moveDirection.y -= gravity;
+            animationControl.Idle();
         }
-        charController.Move(moveDirection * Time.deltaTime);
 
-        Vector3 turnAngle = new Vector3(charController.velocity.x, 0f, charController.velocity.z);
-        if (turnAngle != Vector3.zero) {
-        	animationControl.Run();
-        	transform.rotation = Quaternion.LookRotation(turnAngle * Time.deltaTime);
-        } else {
-        	animationControl.Idle();
+        // Fires wave and pickup animations if on ground (Fire controls here)
+        if (charController.isGrounded) {
+            if (Input.GetButton("Fire1")) {
+                animationControl.Pickup();
+            }
+
+            if (Input.GetButton("Fire2")) {
+                animationControl.Wave();
+            }
         }
-        
-      //   if (charController.velocity == Vector3.zero && !animator.GetBool("isIdle"))
-      //   {
-      //   	animationControl.Idle();           
-      //   }
 
-      //   if (charController.velocity != Vector3.zero && !animator.GetBool("isRun"))
-      //   {
-      //   	animationControl.Run();
-	    	// transform.rotation = Quaternion.LookRotation (movement * speed);
-
-      //   }
     }
 
 }

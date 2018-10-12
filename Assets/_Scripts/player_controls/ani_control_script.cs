@@ -13,7 +13,6 @@ public class ani_control_script : MonoBehaviour {
 
 	public void Idle ()
 	{
-		anim.SetFloat("jump", -5f);
 		anim.SetBool ("isIdle", true);
 		anim.SetBool ("isRun", false);
 	}
@@ -30,11 +29,5 @@ public class ani_control_script : MonoBehaviour {
 
 	public void Wave () {
 		anim.SetTrigger ("isWaving");
-	}
-
-	public void Jump (float Yvelocity) {
-		anim.SetBool ("isIdle", false);
-		anim.SetBool ("isRun", false);
-		anim.SetFloat("jump", Yvelocity);
 	}
 }

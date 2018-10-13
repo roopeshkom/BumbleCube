@@ -28,6 +28,6 @@ public class ani_control_script : MonoBehaviour {
 	}
 
 	public void Wave () {
-		anim.SetTrigger ("isWaving");
+        anim.SetTrigger ("isWaving");
 	}
 }

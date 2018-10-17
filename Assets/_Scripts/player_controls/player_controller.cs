@@ -2,65 +2,91 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player_controller : MonoBehaviour {
+public class player_controller : MonoBehaviour
+{
 
-	private ani_control_script animationControl;
-	private CharacterController charController;
-	private float gravity = 10f;
-	private float jumpSpeed = 4.5f;
-	private float speed = 1.5f;
-	private bool isJumping = false;
-	private bool isActionFired = false;
-	private Vector3 moveDirection = Vector3.zero;
+    public float jumpPower;
+    public float moveSpeed;
+    public float turnSpeed;
+    public float gravity;
+    public float jumpForwardFactor;
 
-	// Use this for initialization
-	void Start () {
-		animationControl = GetComponent<ani_control_script>();
-		charController = GetComponent<CharacterController>();
-	}
-	
-    void FixedUpdate () {
-        if (charController.isGrounded) {
-        	isJumping = false;
-            moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0.0f, Input.GetAxis("Vertical"));
-            moveDirection *= speed;
+    private ani_control_script animationControl;
+    private CharacterController charController;
+    private Vector3 movement;
 
-            if (Input.GetButton("Jump")) {
-                isJumping = true;
-                moveDirection.y = jumpSpeed;
-            } else if (Input.GetButton("Fire1")) {
-            	animationControl.Pickup();
-           	} else if (Input.GetButton("Fire2")) {
-           		animationControl.Wave();
-           	}
+    // Use this for initialization
+    void Start()
+    {
+        animationControl = GetComponent<ani_control_script>();
+        charController = GetComponent<CharacterController>();
+        movement = Vector3.zero;
+    }
+
+    // Handles movements
+    void FixedUpdate()
+    {
+        // Calculates instant ground movement when on ground, and applies gravity when in air
+        if (charController.isGrounded)
+        {
+            movement = CalculateGroundMovement();
         }
-        if (isJumping) {
-        	moveDirection.y -= gravity * Time.deltaTime;
-        	animationControl.Jump(moveDirection.y);
-        } else {
-	        moveDirection.y -= gravity;
+        else
+        {
+            movement += Vector3.down * gravity;
         }
-        charController.Move(moveDirection * Time.deltaTime);
 
-        Vector3 turnAngle = new Vector3(charController.velocity.x, 0f, charController.velocity.z);
-        if (turnAngle != Vector3.zero) {
-        	animationControl.Run();
-        	transform.rotation = Quaternion.LookRotation(turnAngle * Time.deltaTime);
-        } else {
-        	animationControl.Idle();
+        charController.Move(movement * Time.deltaTime);
+        transform.Rotate(Vector3.up * Mathf.Pow(Input.GetAxis("Horizontal"), 3) * turnSpeed * Time.deltaTime);
+    }
+
+    // Handles animation
+    void Update()
+    {
+        SwitchAnimStates();
+        FireAnims();
+    }
+
+    // Fires wave and pickup animations if on ground (Fire controls here)
+    private void FireAnims()
+    {
+        if (Mathf.Abs(charController.velocity.z) > 0.01f)
+        {
+            animationControl.Run();
         }
-        
-      //   if (charController.velocity == Vector3.zero && !animator.GetBool("isIdle"))
-      //   {
-      //   	animationControl.Idle();           
-      //   }
+        else
+        {
+            animationControl.Idle();
+        }
+    }
 
-      //   if (charController.velocity != Vector3.zero && !animator.GetBool("isRun"))
-      //   {
-      //   	animationControl.Run();
-	    	// transform.rotation = Quaternion.LookRotation (movement * speed);
+    // Handles animation switching between run and idle if not moving (Switch anim states here)
+    private void SwitchAnimStates()
+    {
+        if (charController.isGrounded)
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                animationControl.Pickup();
+            }
 
-      //   }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                animationControl.Wave();
+            }
+        }
+    }
+
+    // Calculates movement when character is on ground
+    private Vector3 CalculateGroundMovement()
+    {
+        Vector3 ground_movement = transform.forward* Mathf.Pow(Input.GetAxis("Vertical"), 3) * moveSpeed;
+        if (Input.GetButton("Jump"))
+        {
+            ground_movement += Vector3.Lerp(Vector3.up, transform.forward, jumpForwardFactor) * jumpPower;
+        }
+
+        return ground_movement;
     }
 
 }
